@@ -1,0 +1,304 @@
+/* ---------- Tema padrão: Ordem Paranormal (preto e branco) ---------- */
+:root {
+  --fundo: #1a1a1a;
+  --papel: #f7f7f7;
+  --texto: #0d0d0d;
+  --suave: #6b6b6b;
+  --borda: #0d0d0d;
+  --faixa-bg: #0d0d0d;
+  --faixa-fg: #ffffff;
+  --destaque: #8a0f1c;
+  --cartao: #ffffff;
+  --serif: "Libre Baskerville", Georgia, "Times New Roman", serif;
+  --maquina: "Special Elite", "Courier New", monospace;
+  --titulo: var(--serif);
+}
+
+/* ---------- Outros temas ---------- */
+body[data-tema="fantasia"] {
+  --fundo: #2b1d12;
+  --papel: #f1e4c3;
+  --texto: #2a1a0c;
+  --suave: #7a5a38;
+  --borda: #5a3a1a;
+  --faixa-bg: #5a3a1a;
+  --faixa-fg: #f6e7bd;
+  --destaque: #8a5a00;
+  --cartao: #f8eed6;
+  --titulo: "Cinzel", Georgia, serif;
+}
+
+body[data-tema="cyberpunk"] {
+  --fundo: #05060d;
+  --papel: #0d1020;
+  --texto: #e6f1ff;
+  --suave: #8aa0c8;
+  --borda: #00e5ff;
+  --faixa-bg: #ff2bd6;
+  --faixa-fg: #0d1020;
+  --destaque: #00e5ff;
+  --cartao: #151a33;
+  --titulo: "Orbitron", "Segoe UI", sans-serif;
+}
+
+body[data-tema="terror"] {
+  --fundo: #000000;
+  --papel: #141010;
+  --texto: #e8dcdc;
+  --suave: #9a8080;
+  --borda: #7a0f14;
+  --faixa-bg: #7a0f14;
+  --faixa-fg: #f3e9e9;
+  --destaque: #c0242c;
+  --cartao: #1d1515;
+}
+
+body[data-tema="espaco"] {
+  --fundo: #02040a;
+  --papel: #0a1424;
+  --texto: #dbe8ff;
+  --suave: #7f98c0;
+  --borda: #4aa3ff;
+  --faixa-bg: #1b3a6b;
+  --faixa-fg: #eaf3ff;
+  --destaque: #7ee0a8;
+  --cartao: #10203a;
+  --titulo: "Orbitron", "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--serif);
+  line-height: 1.6;
+}
+
+.moldura {
+  max-width: 980px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 24px 28px 40px;
+  background: var(--papel);
+  border-left: 6px dashed var(--suave);
+  border-right: 6px dashed var(--suave);
+}
+
+/* Faixa com texto em contraste, como os cabeçalhos da ficha */
+.faixa {
+  margin: 0;
+  padding: 6px 16px;
+  background: var(--faixa-bg);
+  color: var(--faixa-fg);
+  font-family: var(--titulo);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  /* bordas irregulares sem precisar de imagem */
+  clip-path: polygon(0 8%, 3% 0, 12% 6%, 25% 0, 40% 5%, 58% 0, 74% 6%, 90% 0, 100% 7%,
+                     99% 55%, 100% 92%, 88% 100%, 70% 94%, 52% 100%, 33% 95%, 15% 100%, 2% 94%, 0 60%);
+}
+
+.faixa-grande {
+  font-size: clamp(2.2rem, 7vw, 3.8rem);
+  line-height: 1.1;
+}
+
+.topo { margin-bottom: 20px; }
+
+.subtitulo {
+  margin: 8px 0 0;
+  font-family: var(--maquina);
+  color: var(--suave);
+  letter-spacing: 0.08em;
+}
+
+/* Menu das campanhas */
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 28px;
+  padding: 12px 0;
+  border-top: 2px solid var(--borda);
+  border-bottom: 2px solid var(--borda);
+}
+
+.menu a {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 2px solid var(--borda);
+  color: var(--texto);
+  text-decoration: none;
+  font-family: var(--maquina);
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.menu a:hover,
+.menu a:focus-visible,
+.menu a[aria-current="true"] {
+  background: var(--faixa-bg);
+  color: var(--faixa-fg);
+  outline: none;
+}
+
+/* Campanha */
+.campanha h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+
+.ficha-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px 24px;
+  margin: 14px 0 22px;
+  font-size: 0.95rem;
+}
+
+.ficha-info div { border-bottom: 1px solid var(--borda); padding-bottom: 2px; }
+.ficha-info span { font-family: var(--maquina); color: var(--suave); margin-right: 6px; }
+
+.ficha-info .status,
+.status {
+  display: inline-block;
+  padding: 1px 10px;
+  border: 2px solid var(--destaque);
+  color: var(--destaque);
+  font-family: var(--maquina);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.bloco { margin-top: 30px; }
+.bloco h3 { font-size: 1.25rem; margin-bottom: 14px; display: inline-block; }
+
+.resumo { font-size: 1.02rem; white-space: pre-line; }
+
+/* Personagens */
+.personagens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.cartao {
+  padding: 14px 16px;
+  border: 2px solid var(--borda);
+  background: var(--cartao);
+}
+
+.cartao h4 { margin: 0 0 4px; font-size: 1.1rem; }
+.cartao .meta { margin: 0 0 8px; font-family: var(--maquina); color: var(--suave); font-size: 0.9rem; }
+.cartao p { margin: 0; font-size: 0.95rem; }
+
+/* Diário de sessões */
+.sessoes { list-style: none; margin: 0; padding: 0; border-left: 3px solid var(--borda); }
+
+.sessao { position: relative; padding: 0 0 22px 22px; }
+.sessao::before {
+  content: "";
+  position: absolute;
+  left: -9px; top: 6px;
+  width: 15px; height: 15px;
+  background: var(--faixa-bg);
+  transform: rotate(45deg);
+}
+
+.sessao h4 { margin: 0; font-size: 1.05rem; }
+.sessao .data { font-family: var(--maquina); color: var(--suave); font-size: 0.88rem; }
+.sessao p { margin: 6px 0 0; white-space: pre-line; }
+
+.vazio { font-family: var(--maquina); color: var(--suave); }
+
+.rodape {
+  margin-top: 48px;
+  padding-top: 14px;
+  border-top: 2px solid var(--borda);
+  text-align: center;
+  font-family: var(--maquina);
+  color: var(--suave);
+  font-size: 0.85rem;
+}
+
+.rodape a { color: var(--suave); }
+
+/* ---------- Painel admin ---------- */
+.painel { margin-top: 10px; }
+.painel[hidden] { display: none; }
+
+.campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.campo label { font-family: var(--maquina); color: var(--suave); font-size: 0.9rem; }
+
+.campo input,
+.campo select,
+.campo textarea {
+  padding: 8px 10px;
+  border: 2px solid var(--borda);
+  background: var(--cartao);
+  color: var(--texto);
+  font: inherit;
+}
+
+.campo textarea { min-height: 110px; resize: vertical; }
+
+.grade-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0 18px;
+}
+
+.btn {
+  padding: 8px 18px;
+  border: 2px solid var(--borda);
+  background: var(--faixa-bg);
+  color: var(--faixa-fg);
+  font-family: var(--maquina);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn:hover,
+.btn:focus-visible { filter: brightness(1.2); outline: none; }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.btn-claro { background: transparent; color: var(--texto); }
+
+.lista-admin { list-style: none; margin: 0 0 18px; padding: 0; }
+
+.lista-admin li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border: 2px solid var(--borda);
+  background: var(--cartao);
+}
+
+.lista-admin .nome { font-weight: 700; }
+.lista-admin .detalhe { font-family: var(--maquina); color: var(--suave); font-size: 0.85rem; }
+
+.aviso {
+  padding: 10px 14px;
+  margin: 14px 0;
+  border: 2px solid var(--destaque);
+  color: var(--destaque);
+  font-family: var(--maquina);
+  font-size: 0.92rem;
+}
+
+.aviso[hidden] { display: none; }
+.aviso.ok { border-color: var(--suave); color: var(--texto); }
+
+.ajuda { font-size: 0.9rem; color: var(--suave); }
+
+/* Celular */
+@media (max-width: 600px) {
+  .moldura { padding: 16px 14px 32px; border-width: 3px; }
+  .menu a { font-size: 0.85rem; padding: 5px 10px; }
+  .lista-admin li { flex-direction: column; align-items: flex-start; }
+}
