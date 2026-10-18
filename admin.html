@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Admin · HubPG</title>
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Cinzel:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -63,7 +66,8 @@
           </div>
           <div class="campo">
             <label for="f-sistema">Sistema de RPG</label>
-            <input id="f-sistema" placeholder="Ordem Paranormal, D&amp;D 5e...">
+            <input id="f-sistema" list="lista-sistemas" placeholder="Ordem Paranormal, D&amp;D 5e...">
+            <datalist id="lista-sistemas"></datalist>
           </div>
           <div class="campo">
             <label for="f-mestre">Mestre</label>
@@ -99,6 +103,7 @@
     </section>
   </div>
 
+  <script src="sistemas.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

@@ -66,6 +66,19 @@ body[data-tema="espaco"] {
   --titulo: "Orbitron", "Segoe UI", sans-serif;
 }
 
+/* Escuro com vermelho, no estilo das fichas digitais de Ordem Paranormal */
+body[data-tema="sangue"] {
+  --fundo: #0a0a0c;
+  --papel: #131316;
+  --texto: #f1ebeb;
+  --suave: #a09494;
+  --borda: #6e1b1b;
+  --faixa-bg: #b3201f;
+  --faixa-fg: #ffffff;
+  --destaque: #ec3a35;
+  --cartao: #1b1b1f;
+}
+
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
@@ -301,4 +314,218 @@ body {
   .moldura { padding: 16px 14px 32px; border-width: 3px; }
   .menu a { font-size: 0.85rem; padding: 5px 10px; }
   .lista-admin li { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- Botão de criar personagem ---------- */
+a.btn { display: inline-block; text-decoration: none; }
+.acoes { margin: 0 0 6px; }
+
+/* ---------- Criador de personagem ---------- */
+.ferramentas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 24px;
+  padding: 12px 0;
+  border-top: 2px solid var(--borda);
+  border-bottom: 2px solid var(--borda);
+}
+
+.ferramentas select {
+  padding: 8px 10px;
+  border: 2px solid var(--borda);
+  background: var(--cartao);
+  color: var(--texto);
+  font: inherit;
+  max-width: 100%;
+}
+
+.status-salvo {
+  margin-left: auto;
+  font-family: var(--maquina);
+  color: var(--suave);
+  font-size: 0.85rem;
+}
+
+.ficha-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px 24px;
+  align-items: start;
+}
+
+.ficha-bloco {
+  padding: 14px 16px 16px;
+  border: 2px solid var(--borda);
+  background: var(--cartao);
+}
+
+.ficha-bloco.largo { grid-column: 1 / -1; }
+.ficha-bloco > h3.faixa { display: inline-block; margin: -26px 0 12px; font-size: 1.05rem; }
+
+.avisos-ficha { border-color: var(--destaque); }
+.aviso-linha { margin: 4px 0; font-family: var(--maquina); color: var(--destaque); font-size: 0.92rem; }
+
+.linha-modo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 6px; }
+.linha-modo select {
+  padding: 8px 10px; border: 2px solid var(--borda);
+  background: var(--papel); color: var(--texto); font: inherit;
+}
+
+.orcamento { margin: 0; font-family: var(--maquina); color: var(--texto); }
+.orcamento.ruim { color: var(--destaque); }
+
+/* Atributos */
+.atributos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 14px;
+}
+
+.atributo {
+  padding: 10px 6px 12px;
+  text-align: center;
+  border: 2px solid var(--borda);
+  background: var(--papel);
+}
+
+.atributo .sigla { font-family: var(--maquina); letter-spacing: 0.1em; color: var(--suave); }
+.atributo .valor { font-family: var(--titulo); font-size: 2.4rem; line-height: 1.1; }
+.atributo .mod { font-family: var(--maquina); color: var(--destaque); }
+.atributo .nome { font-size: 0.78rem; color: var(--suave); }
+.atributo .controles { display: flex; justify-content: center; gap: 8px; margin-top: 8px; }
+.atributo .extra { display: block; margin-top: 8px; font-family: var(--maquina); font-size: 0.8rem; color: var(--suave); }
+.atributo .extra input {
+  width: 3.4em; padding: 2px 4px; text-align: center;
+  border: 2px solid var(--borda); background: var(--cartao); color: var(--texto); font: inherit;
+}
+
+.mini {
+  min-width: 36px;
+  padding: 2px 10px;
+  border: 2px solid var(--borda);
+  background: transparent;
+  color: var(--texto);
+  font-family: var(--maquina);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.mini:hover, .mini:focus-visible { background: var(--faixa-bg); color: var(--faixa-fg); outline: none; }
+
+/* Pontos de vida, sanidade, esforço */
+.vital { margin-bottom: 14px; }
+.topo-vital { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 10px; font-family: var(--maquina); }
+.topo-vital strong { flex: 1 1 11em; }
+.topo-vital > span { white-space: nowrap; }
+.vital .atual {
+  width: 4.2em; padding: 2px 6px; text-align: center;
+  border: 2px solid var(--borda); background: var(--papel); color: var(--texto); font: inherit;
+}
+
+.barra {
+  position: relative;
+  height: 24px;
+  margin-top: 6px;
+  overflow: hidden;
+  border: 2px solid var(--borda);
+  background: var(--papel);
+  transform: skewX(-12deg);
+}
+
+.barra > i { position: absolute; top: 0; bottom: 0; left: 0; width: 100%; background: var(--destaque); }
+
+/* Valores calculados */
+.derivados { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.derivado { padding: 8px 10px; border: 2px solid var(--borda); background: var(--papel); }
+.derivado .rotulo { font-family: var(--maquina); font-size: 0.78rem; color: var(--suave); }
+.derivado .valor { font-family: var(--titulo); font-size: 1.35rem; }
+
+/* Perícias */
+.pericias {
+  list-style: none; margin: 10px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2px 22px;
+}
+
+.pericia { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dotted var(--suave); font-size: 0.93rem; }
+.pericia label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.pericia .attr { margin-left: auto; font-family: var(--maquina); font-size: 0.75rem; color: var(--suave); }
+.pericia .res { min-width: 6.2em; text-align: right; font-family: var(--maquina); }
+.pericia.marcada .nome-p { font-weight: 700; }
+
+/* Listas editáveis (habilidades, equipamentos...) */
+.item-lista {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start;
+  margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dotted var(--suave);
+}
+
+.item-lista input, .item-lista textarea, .texto-livre {
+  padding: 8px 10px; border: 2px solid var(--borda);
+  background: var(--papel); color: var(--texto); font: inherit;
+}
+
+.item-lista input { flex: 1 1 150px; min-width: 0; }
+.item-lista input[type="number"] { flex: 0 1 110px; }
+.item-lista textarea { flex: 3 1 260px; min-height: 56px; resize: vertical; }
+.texto-livre { width: 100%; min-height: 150px; resize: vertical; }
+
+/* Retrato e identidade */
+.identidade-wrap { display: grid; grid-template-columns: 1fr 190px; gap: 18px; align-items: start; }
+.retrato { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+.retrato img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border: 2px solid var(--borda); }
+.retrato-vazio {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 3 / 4; border: 2px dashed var(--suave);
+  font-family: var(--maquina); color: var(--suave); font-size: 0.85rem;
+}
+
+/* Números digitados à mão (defesa, resistências, deslocamento) */
+.numeros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+.numero { display: flex; flex-direction: column; gap: 4px; }
+.numero label { font-family: var(--maquina); font-size: 0.85rem; color: var(--suave); }
+.numero input {
+  width: 100%; padding: 8px 10px; text-align: center;
+  border: 2px solid var(--borda); background: var(--papel); color: var(--texto); font: inherit;
+}
+
+/* Caixinhas de marcar e escolha de proteção */
+.marcas { display: flex; flex-direction: column; gap: 10px; }
+.marca-grupo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; }
+.rotulo-marca { font-family: var(--maquina); }
+.caixas { display: inline-flex; gap: 8px; }
+.caixas input, .escolha input { width: 20px; height: 20px; accent-color: var(--destaque); }
+.escolha { display: flex; flex-wrap: wrap; gap: 8px 18px; font-family: var(--maquina); }
+.escolha label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+/* Perícias em colunas, uma por atributo */
+.pericias-grupos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-top: 10px; }
+.grupo-pericias h4 {
+  margin: 0 0 4px; padding-bottom: 4px; border-bottom: 2px solid var(--borda);
+  font-family: var(--titulo); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.95rem;
+}
+.grupo-pericias .pericias { grid-template-columns: 1fr; margin-top: 0; }
+
+.ajuda { margin: 6px 0; }
+
+/* Impressão: sempre preto no branco, mesmo nos temas escuros */
+@media print {
+  body, body[data-tema] {
+    --fundo: #fff; --papel: #fff; --texto: #000; --suave: #444; --borda: #000;
+    --faixa-bg: #000; --faixa-fg: #fff; --destaque: #000; --cartao: #fff;
+    background: #fff;
+  }
+  .moldura { border: 0; padding: 0; min-height: 0; }
+  .ferramentas, .rodape, .ficha-bloco .btn, .mini, .retrato .btn { display: none; }
+  .ficha-bloco { break-inside: avoid; }
+  .barra > i { background: #000; }
+}
+
+@media (max-width: 600px) {
+  .identidade-wrap { grid-template-columns: 1fr; }
+  .retrato { max-width: 200px; }
+}
+
+@media (max-width: 600px) {
+  .status-salvo { margin-left: 0; width: 100%; }
 }

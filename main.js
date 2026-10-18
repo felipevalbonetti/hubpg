@@ -49,6 +49,14 @@
     info.appendChild(st);
     sec.appendChild(info);
 
+    var acoes = el("div", "acoes");
+    var s = (typeof HubPGSistemas !== "undefined") ? HubPGSistemas.acharSistema(c.sistemaId || c.sistema) : null;
+    var rotuloBotao = "Criar personagem" + (s ? " · " + (s.id === "livre" ? "ficha livre" : s.nome) : "");
+    var criar = el("a", "btn", rotuloBotao);
+    criar.href = "personagem.html?campanha=" + encodeURIComponent(c.id);
+    acoes.appendChild(criar);
+    sec.appendChild(acoes);
+
     var bResumo = el("div", "bloco");
     bResumo.appendChild(el("h3", "faixa", "Resumo"));
     bResumo.appendChild(el("p", "resumo", c.resumo || ""));

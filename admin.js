@@ -6,14 +6,16 @@
   var CABECALHO =
     "// Arquivo gerado pelo painel admin do HubPG (admin.html).\n" +
     "// Pode ser editado a mão, desde que o conteúdo continue em formato JSON valido.\n" +
-    "// Temas disponiveis: ordem, fantasia, cyberpunk, terror, espaco.\n";
+    "// Temas disponiveis: ordem, fantasia, cyberpunk, terror, espaco, sangue.\n" +
+    "// Sistemas (sistemaId): ordem, conduta, dnd5e, livre.\n";
 
   var TEMAS = [
     ["ordem", "Ordem Paranormal (preto e branco)"],
     ["fantasia", "Fantasia medieval"],
     ["cyberpunk", "Cyberpunk"],
     ["terror", "Terror"],
-    ["espaco", "Ficção científica / espaço"]
+    ["espaco", "Ficção científica / espaço"],
+    ["sangue", "Escuro e vermelho (ficha digital)"]
   ];
 
   var estado = { lista: [], sha: null, sujo: false, cfg: null, token: "" };
@@ -237,6 +239,7 @@
       id: idUnico(titulo, estado.lista),
       titulo: titulo,
       sistema: $("f-sistema").value.trim(),
+      sistemaId: (typeof HubPGSistemas !== "undefined") ? HubPGSistemas.acharSistema($("f-sistema").value.trim()).id : undefined,
       mestre: $("f-mestre").value.trim(),
       status: $("f-status").value,
       tema: $("f-tema").value,
@@ -257,6 +260,14 @@
       o.textContent = t[1];
       $("f-tema").appendChild(o);
     });
+
+    if (typeof HubPGSistemas !== "undefined") {
+      HubPGSistemas.nomes().forEach(function (n) {
+        var o = document.createElement("option");
+        o.value = n;
+        $("lista-sistemas").appendChild(o);
+      });
+    }
 
     var det = detectarRepo();
     var salvo = {};
