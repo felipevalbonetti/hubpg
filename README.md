@@ -22,7 +22,9 @@ Para criar o token (uma vez só):
 3. Em **Permissions → Repository permissions**, coloque **Contents: Read and write**.
 4. Escolha uma validade (por exemplo 90 dias), gere e copie o token. Ele só aparece uma vez.
 
-Depois é só colar o token no painel. Você pode adicionar campanhas (com sistema, mestre, status, tema e resumo), remover as que não quiser e clicar em **Salvar no GitHub**. O site atualiza em cerca de um minuto. O token fica só na aba do navegador e é enviado apenas ao GitHub. Não compartilhe o token e não coloque ele em nenhum arquivo do repositório.
+Na **primeira vez**, o painel mostra "Criar conta de administrador": informe o usuário do GitHub, o repositório, o token e escolha uma senha (mínimo de 4 caracteres, `1234` funciona). O token é guardado **criptografado neste navegador**, trancado pela senha, e nas próximas vezes você entra só com a senha. A conta vale só no aparelho onde foi criada; em outro, crie de novo com o token. Se esquecer a senha, use "Esqueci a senha / trocar de token" e crie a conta outra vez. Senha curta é fácil de adivinhar por quem usar o seu aparelho, e quem tem acesso ao token continua podendo alterar o site direto no GitHub. Também dá para entrar "só com o token", sem criar conta. Entrar com Google não é possível, porque isso exige um servidor e o GitHub Pages não tem.
+
+Dentro do painel, você pode adicionar campanhas (com sistema, mestre, status, tema e resumo), remover as que não quiser e clicar em **Salvar no GitHub**. O site atualiza em cerca de um minuto. O token fica só na aba do navegador e é enviado apenas ao GitHub. Não compartilhe o token e não coloque ele em nenhum arquivo do repositório.
 
 ## Criar personagem
 

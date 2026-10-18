@@ -171,22 +171,19 @@
       });
   }
 
-  function entrar() {
-    aviso("");
-    var cfg = {
+  function lerCfg() {
+    return {
       dono: $("dono").value.trim(),
       repo: $("repo").value.trim(),
       ramo: $("ramo").value.trim() || "main"
     };
-    var token = $("token").value.trim();
-    if (!cfg.dono || !cfg.repo || !token) {
-      aviso("Preencha usuário, repositório e token.");
-      return;
-    }
+  }
+
+  // Testa o token no GitHub, carrega as campanhas e abre o painel. Rejeita se algo falhar.
+  function abrirPainel(cfg, token) {
     estado.cfg = cfg;
     estado.token = token;
-    $("entrar").disabled = true;
-    carregar().then(function () {
+    return carregar().then(function () {
       try {
         sessionStorage.setItem("hubpg-token", token);
         localStorage.setItem("hubpg-cfg", JSON.stringify(cfg));
@@ -195,10 +192,166 @@
       $("gerenciar").hidden = false;
       marcarSujo(false);
       desenharLista();
-    }).catch(function (e) {
+    }, function (e) {
       estado.token = "";
+      throw e;
+    });
+  }
+
+  // Entrada direta, só com o token (sem criar conta)
+  function entrar() {
+    aviso("");
+    var cfg = lerCfg();
+    var token = $("token").value.trim();
+    if (!cfg.dono || !cfg.repo || !token) {
+      aviso("Preencha usuário, repositório e token.");
+      return;
+    }
+    $("entrar").disabled = true;
+    abrirPainel(cfg, token).catch(function (e) {
       aviso(e.message || "Não foi possível entrar.");
     }).then(function () { $("entrar").disabled = false; });
+  }
+
+  // ---------- conta com senha: o token fica criptografado neste navegador ----------
+  // A senha gera uma chave (PBKDF2, 250 mil voltas) que tranca o token com AES-GCM.
+  // Sem a senha, o que está guardado no navegador é só texto embaralhado.
+
+  var CHAVE_CONTA = "hubpg-conta";
+  var falhasSenha = 0;
+
+  function temCripto() {
+    return typeof crypto !== "undefined" && !!crypto.subtle && typeof crypto.subtle.importKey === "function";
+  }
+
+  function aBytes(t) { return new TextEncoder().encode(t); }
+
+  function bytesParaB64(buf) {
+    var b = new Uint8Array(buf), s = "";
+    for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    return btoa(s);
+  }
+
+  function b64ParaBytes(b64) {
+    var s = atob(b64), b = new Uint8Array(s.length);
+    for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i);
+    return b;
+  }
+
+  function derivarChave(senha, sal) {
+    return crypto.subtle.importKey("raw", aBytes(senha), "PBKDF2", false, ["deriveKey"]).then(function (base) {
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: sal, iterations: 250000, hash: "SHA-256" },
+        base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+    });
+  }
+
+  function cifrar(senha, texto) {
+    var sal = crypto.getRandomValues(new Uint8Array(16));
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    return derivarChave(senha, sal).then(function (chave) {
+      return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, chave, aBytes(texto));
+    }).then(function (buf) {
+      return { v: 1, sal: bytesParaB64(sal), iv: bytesParaB64(iv), dados: bytesParaB64(buf) };
+    });
+  }
+
+  // Rejeita se a senha estiver errada (o AES-GCM não destranca com chave diferente)
+  function decifrar(senha, seg) {
+    return derivarChave(senha, b64ParaBytes(seg.sal)).then(function (chave) {
+      return crypto.subtle.decrypt({ name: "AES-GCM", iv: b64ParaBytes(seg.iv) }, chave, b64ParaBytes(seg.dados));
+    }).then(function (buf) { return new TextDecoder().decode(buf); });
+  }
+
+  window.HubPGAdmin.cifrar = cifrar;
+  window.HubPGAdmin.decifrar = decifrar;
+
+  function lerConta() {
+    try {
+      var c = JSON.parse(localStorage.getItem(CHAVE_CONTA) || "null");
+      return (c && c.seg && c.cfg) ? c : null;
+    } catch (e) { return null; }
+  }
+
+  function mostrarEntrada() {
+    var conta = lerConta();
+    $("gerenciar").hidden = true;
+    $("entrada").hidden = false;
+    $("p-entrar").hidden = !conta;
+    $("p-criar").hidden = !!conta;
+    if (conta) {
+      $("resumo-conta").textContent = conta.cfg.dono + "/" + conta.cfg.repo;
+      $("senha-entrar").value = "";
+    }
+  }
+
+  function criarConta() {
+    aviso("");
+    var cfg = lerCfg();
+    var token = $("token").value.trim();
+    var s1 = $("senha-nova").value, s2 = $("senha-nova2").value;
+    if (!cfg.dono || !cfg.repo || !token) { aviso("Preencha usuário, repositório e token."); return; }
+    if (!temCripto()) {
+      aviso("Este navegador não deixa guardar a senha com segurança nesta página (ela precisa abrir por https). Use \"Entrar só com o token\".");
+      return;
+    }
+    if (s1.length < 4) { aviso("A senha precisa ter pelo menos 4 caracteres."); return; }
+    if (s1 !== s2) { aviso("As duas senhas não são iguais."); return; }
+    $("criar-conta").disabled = true;
+    abrirPainel(cfg, token).then(function () {
+      return cifrar(s1, token).then(function (seg) {
+        try {
+          localStorage.setItem(CHAVE_CONTA, JSON.stringify({ cfg: cfg, seg: seg }));
+        } catch (e) {
+          aviso("Você entrou, mas não consegui guardar a conta neste navegador.");
+          return;
+        }
+        aviso("Conta criada. Da próxima vez, entre só com a senha." +
+              (s1.length < 8 ? " Senha curta: ela só protege o token guardado neste navegador." : ""), true);
+      });
+    }).catch(function (e) {
+      aviso(e.message || "Não foi possível criar a conta.");
+    }).then(function () {
+      $("criar-conta").disabled = false;
+      $("senha-nova").value = "";
+      $("senha-nova2").value = "";
+      $("token").value = "";
+    });
+  }
+
+  function entrarComSenha() {
+    aviso("");
+    var conta = lerConta();
+    if (!conta) { mostrarEntrada(); return; }
+    var senha = $("senha-entrar").value;
+    if (!senha) { aviso("Digite a senha."); return; }
+    var btn = $("entrar-senha");
+    btn.disabled = true;
+    decifrar(senha, conta.seg).then(function (token) {
+      falhasSenha = 0;
+      return abrirPainel(conta.cfg, token).catch(function (e) {
+        aviso((e.message || "Não foi possível entrar.") +
+              " Se o token expirou ou foi revogado, use \"Esqueci a senha / trocar de token\" e crie a conta de novo.");
+      });
+    }, function () {
+      falhasSenha++;
+      aviso("Senha incorreta.");
+      // atrasa as tentativas seguidas
+      return new Promise(function (ok) { setTimeout(ok, Math.min(falhasSenha, 5) * 1000); });
+    }).then(function () {
+      btn.disabled = false;
+      $("senha-entrar").value = "";
+    });
+  }
+
+  function apagarConta() {
+    if (!confirm("Apagar a conta deste navegador? Para criar de novo você vai precisar do token do GitHub.")) return;
+    try {
+      localStorage.removeItem(CHAVE_CONTA);
+      sessionStorage.removeItem("hubpg-token");
+    } catch (e) {}
+    mostrarEntrada();
+    aviso("Conta apagada deste navegador.", true);
   }
 
   function salvar() {
@@ -226,8 +379,7 @@
     estado.lista = [];
     marcarSujo(false);
     $("token").value = "";
-    $("gerenciar").hidden = true;
-    $("entrada").hidden = false;
+    mostrarEntrada();
     aviso("");
   }
 
@@ -272,12 +424,20 @@
     var det = detectarRepo();
     var salvo = {};
     try { salvo = JSON.parse(localStorage.getItem("hubpg-cfg") || "{}"); } catch (e) {}
+    var conta = lerConta();
+    if (conta) salvo = conta.cfg;
     $("dono").value = det.dono || salvo.dono || "";
     $("repo").value = det.repo || salvo.repo || "hubpg";
     $("ramo").value = salvo.ramo || "main";
 
     $("entrar").addEventListener("click", entrar);
     $("token").addEventListener("keydown", function (e) { if (e.key === "Enter") entrar(); });
+    $("criar-conta").addEventListener("click", criarConta);
+    $("senha-nova2").addEventListener("keydown", function (e) { if (e.key === "Enter") criarConta(); });
+    $("entrar-senha").addEventListener("click", entrarComSenha);
+    $("senha-entrar").addEventListener("keydown", function (e) { if (e.key === "Enter") entrarComSenha(); });
+    $("apagar-conta").addEventListener("click", apagarConta);
+    mostrarEntrada();
     $("form").addEventListener("submit", adicionar);
     $("salvar").addEventListener("click", salvar);
     $("sair").addEventListener("click", sair);

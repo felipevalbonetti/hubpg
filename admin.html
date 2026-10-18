@@ -24,31 +24,62 @@
 
     <!-- Entrada -->
     <section id="entrada" class="painel">
-      <h2 class="faixa">Entrar</h2>
-      <p class="ajuda">
-        Aqui a "senha" é um token do GitHub com permissão de escrita só neste repositório.
-        Quem não tem o token consegue abrir esta página, mas não consegue alterar nada.
-        O token fica guardado apenas nesta aba do navegador e só é enviado ao GitHub.
-      </p>
-      <div class="grade-campos">
+
+      <!-- Já existe uma conta neste navegador: entra só com a senha -->
+      <div id="p-entrar" hidden>
+        <h2 class="faixa">Entrar</h2>
+        <p class="ajuda">Conta deste navegador: <strong id="resumo-conta"></strong></p>
         <div class="campo">
-          <label for="dono">Usuário do GitHub</label>
-          <input id="dono" autocomplete="off">
+          <label for="senha-entrar">Senha</label>
+          <input id="senha-entrar" type="password" autocomplete="current-password">
         </div>
-        <div class="campo">
-          <label for="repo">Repositório</label>
-          <input id="repo" autocomplete="off" value="hubpg">
-        </div>
-        <div class="campo">
-          <label for="ramo">Branch</label>
-          <input id="ramo" autocomplete="off" value="main">
-        </div>
+        <button id="entrar-senha" class="btn" type="button">Entrar</button>
+        <button id="apagar-conta" class="btn btn-claro" type="button">Esqueci a senha / trocar de token</button>
       </div>
-      <div class="campo">
-        <label for="token">Token do GitHub</label>
-        <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+
+      <!-- Primeira vez: cria a conta guardando o token com uma senha -->
+      <div id="p-criar" hidden>
+        <h2 class="faixa">Criar conta de administrador</h2>
+        <p class="ajuda">
+          O que dá permissão de alterar o site é um token do GitHub (só do repositório do HubPG).
+          Ao criar a conta, o token fica guardado <strong>criptografado neste navegador</strong>, protegido
+          pela senha que você escolher, e nas próximas vezes você entra só com a senha. A senha pode ser curta,
+          mas senha curta é fácil de adivinhar por quem usar este aparelho. A conta vale só neste aparelho:
+          em outro, crie de novo com o token. Quem não tem a senha nem o token abre esta página,
+          mas não consegue alterar nada.
+        </p>
+        <div class="grade-campos">
+          <div class="campo">
+            <label for="dono">Usuário do GitHub</label>
+            <input id="dono" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label for="repo">Repositório</label>
+            <input id="repo" autocomplete="off" value="hubpg">
+          </div>
+          <div class="campo">
+            <label for="ramo">Branch</label>
+            <input id="ramo" autocomplete="off" value="main">
+          </div>
+        </div>
+        <div class="campo">
+          <label for="token">Token do GitHub</label>
+          <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+        </div>
+        <div class="grade-campos">
+          <div class="campo">
+            <label for="senha-nova">Escolha uma senha</label>
+            <input id="senha-nova" type="password" autocomplete="new-password">
+          </div>
+          <div class="campo">
+            <label for="senha-nova2">Repita a senha</label>
+            <input id="senha-nova2" type="password" autocomplete="new-password">
+          </div>
+        </div>
+        <button id="criar-conta" class="btn" type="button">Criar conta e entrar</button>
+        <button id="entrar" class="btn btn-claro" type="button">Entrar só com o token</button>
+        <p class="ajuda">Entrar com uma conta do Google não é possível neste tipo de site, porque isso exige um servidor.</p>
       </div>
-      <button id="entrar" class="btn" type="button">Entrar</button>
     </section>
 
     <!-- Gerenciar -->
