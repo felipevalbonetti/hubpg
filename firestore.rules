@@ -1,0 +1,34 @@
+// Regras de segurança do Firestore para o HubPG.
+//
+// Como usar: no Firebase, vá em Firestore Database > Regras, apague o que
+// estiver lá, cole TUDO abaixo e troque SEU_EMAIL_AQUI pelo e-mail (ou e-mails)
+// que podem administrar o site. Depois clique em Publicar.
+//
+// O que elas fazem:
+//  - qualquer pessoa pode LER as campanhas (o site é público);
+//  - só quem entrou com um e-mail CONFIRMADO e que está na lista abaixo pode
+//    criar, editar ou apagar campanhas. A confirmação impede que alguém crie
+//    uma conta com o e-mail de outra pessoa e se passe por ela;
+//  - todo o resto do banco fica trancado.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function ehAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['SEU_EMAIL_AQUI@gmail.com'];
+    }
+
+    match /campanhas/{campanha} {
+      allow read: if true;
+      allow write: if ehAdmin();
+    }
+
+    // Documento usado pelo painel só para descobrir se você é administrador
+    match /admin/{doc} {
+      allow read: if ehAdmin();
+    }
+  }
+}

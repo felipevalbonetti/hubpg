@@ -26,6 +26,28 @@ Na **primeira vez**, o painel mostra "Criar conta de administrador": informe o u
 
 Dentro do painel, você pode adicionar campanhas (com sistema, mestre, status, tema e resumo), remover as que não quiser e clicar em **Salvar no GitHub**. O site atualiza em cerca de um minuto. O token fica só na aba do navegador e é enviado apenas ao GitHub. Não compartilhe o token e não coloque ele em nenhum arquivo do repositório.
 
+## Admin com e-mail, senha e Google (Firebase)
+
+Sem Firebase, o admin usa um token do GitHub. Com o Firebase configurado, o admin passa a ter
+**criar conta com e-mail e senha** e **entrar com o Google**, e as campanhas ficam guardadas na nuvem
+(Firestore) em vez de no `campanhas.js`.
+
+1. Em https://console.firebase.google.com crie um projeto (o Analytics pode ficar desligado).
+2. **Authentication > Sign-in method**: ative **E-mail/senha** e **Google**.
+3. **Authentication > Settings > Authorized domains**: adicione `felipevalbonetti.github.io`.
+4. **Firestore Database > Criar banco** (modo produção, região `southamerica-east1`).
+5. Abra o `firestore.rules`, troque `SEU_EMAIL_AQUI@gmail.com` pelo e-mail do admin (pode ter vários, separados por vírgula),
+   cole tudo em **Firestore > Regras** e publique.
+6. **Configurações do projeto > Seus apps > Web (`</>`)**: registre um app e copie o `firebaseConfig`
+   para o `firebase-config.js` (esses valores não são segredo). Faça commit.
+7. Abra `admin.html`, crie a conta (ou entre com o Google) e use **Importar as campanhas do campanhas.js** na primeira vez.
+
+Detalhes:
+- A senha precisa de **no mínimo 6 caracteres** (o Firebase não aceita `1234`; `123456` funciona).
+- Contas de e-mail e senha precisam confirmar o e-mail pelo link enviado.
+- Qualquer um consegue criar conta, mas **só os e-mails listados no `firestore.rules` conseguem alterar** o site. Depois de criar a sua, dá para desativar novos cadastros no console do Firebase.
+- Se a nuvem falhar, o site público mostra o `campanhas.js` com um aviso.
+
 ## Criar personagem
 
 Cada campanha tem o botão **Criar personagem**, que abre a ficha do sistema de RPG daquela campanha. O sistema vem do campo `sistemaId` em `campanhas.js` (o painel admin preenche sozinho pelo nome do sistema que você digitar):

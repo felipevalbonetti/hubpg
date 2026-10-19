@@ -37,14 +37,21 @@
   // ---------- contexto da página ----------
 
   var params = new URLSearchParams(location.search);
-  var campanhas = (typeof CAMPANHAS !== "undefined") ? CAMPANHAS : [];
-  var campanha = porId(campanhas, params.get("campanha"));
-  var sis = H.acharSistema(params.get("sistema") || (campanha && (campanha.sistemaId || campanha.sistema)));
-  var campanhaId = campanha ? campanha.id : "";
+  var campanha = null;
+  var sis = H.SISTEMAS.livre;
+  var campanhaId = "";
+  var nuvem = !!(window.HubPGDados && window.HubPGDados.configurado());
 
-  document.body.setAttribute("data-tema", (campanha && campanha.tema) || sis.tema || "ordem");
-  document.title = "Criar personagem · " + sis.nome + " · HubPG";
-  sub.textContent = sis.nome + (campanha ? " · " + campanha.titulo : "") + " — " + (sis.resumo || "");
+  // Roda quando as campanhas chegam (do arquivo ou da nuvem)
+  function configurar(lista) {
+    campanha = porId(lista, params.get("campanha"));
+    sis = H.acharSistema(params.get("sistema") || (campanha && (campanha.sistemaId || campanha.sistema)));
+    campanhaId = campanha ? campanha.id : "";
+
+    document.body.setAttribute("data-tema", (campanha && campanha.tema) || sis.tema || "ordem");
+    document.title = "Criar personagem · " + sis.nome + " · HubPG";
+    sub.textContent = sis.nome + (campanha ? " · " + campanha.titulo : "") + " — " + (sis.resumo || "");
+  }
 
   // ---------- ficha (estado) ----------
 
@@ -669,10 +676,17 @@
 
   function copiarResumo() {
     var texto = resumoParaCampanha();
-    function plano() { window.prompt("Copie este bloco e cole em personagens, no campanhas.js:", texto); }
+    function plano() {
+      window.prompt(nuvem ? "Copie este bloco e use \"Colar personagem\" no painel admin:"
+                          : "Copie este bloco e cole em personagens, no campanhas.js:", texto);
+    }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(texto).then(
-        function () { setStatus("Resumo copiado. Cole em \"personagens\" da campanha, no campanhas.js."); },
+        function () {
+          setStatus(nuvem
+            ? "Resumo copiado. No painel admin, edite a campanha e use \"Colar personagem\"."
+            : "Resumo copiado. Cole em \"personagens\" da campanha, no campanhas.js.");
+        },
         plano
       );
     } else {
@@ -753,15 +767,22 @@
 
   // ---------- início ----------
 
-  novaFicha();
-  montarFerramentas();
-  atualizarSeletor();
-  render();
+  function iniciar(lista) {
+    configurar(lista);
+    novaFicha();
+    montarFerramentas();
+    atualizarSeletor();
+    render();
 
-  window.HubPGFicha = {
-    estado: function () { return f; },
-    sistema: sis,
-    calcular: calcular,
-    resumoParaCampanha: resumoParaCampanha
-  };
+    window.HubPGFicha = {
+      estado: function () { return f; },
+      sistema: sis,
+      calcular: calcular,
+      resumoParaCampanha: resumoParaCampanha
+    };
+  }
+
+  var D = window.HubPGDados;
+  (D ? D.carregar() : Promise.resolve({ lista: (typeof CAMPANHAS !== "undefined" && CAMPANHAS) || [] }))
+    .then(function (r) { iniciar(r.lista); });
 })();

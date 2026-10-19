@@ -74,7 +74,7 @@
   }
 
   window.HubPGAdmin = { slug: slug, idUnico: idUnico, extrair: extrair, gerar: gerar,
-                        paraBase64: paraBase64, deBase64: deBase64 };
+                        paraBase64: paraBase64, deBase64: deBase64, TEMAS: TEMAS };
 
   // ---------- interface ----------
 
@@ -454,5 +454,13 @@
     }
   }
 
-  if (typeof document !== "undefined" && document.getElementById("entrar")) iniciar();
+  if (typeof document !== "undefined" && document.getElementById("entrar")) {
+    // Com o Firebase configurado, quem assume o painel é o admin-nuvem.js
+    var nuvem = !!(window.HubPGDados && window.HubPGDados.configurado());
+    if (!nuvem) {
+      $("carregando").hidden = true;
+      $("modo-arquivo").hidden = false;   // primeiro mostra, depois liga os botões: nunca fica em branco
+      iniciar();
+    }
+  }
 })();

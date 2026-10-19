@@ -101,12 +101,26 @@
     return sec;
   }
 
+  var lista = [];
+  var origem = { origem: "arquivo" };
+  var carregado = false;
+
   function mostrar() {
-    var lista = (typeof CAMPANHAS !== "undefined" && CAMPANHAS) || [];
     conteudo.textContent = "";
+    if (!carregado) {
+      conteudo.appendChild(el("p", "vazio", "Carregando campanhas…"));
+      return;
+    }
+
+    if (origem.erro) {
+      conteudo.appendChild(el("p", "aviso",
+        "Não consegui falar com a nuvem agora. Estas são as campanhas da cópia local; recarregue a página para tentar de novo."));
+    }
 
     if (!lista.length) {
-      conteudo.appendChild(el("p", "vazio", "Nenhuma campanha cadastrada. Edite o arquivo campanhas.js."));
+      conteudo.appendChild(el("p", "vazio", origem.origem === "nuvem"
+        ? "Nenhuma campanha ainda. Entre no admin para criar a primeira."
+        : "Nenhuma campanha cadastrada. Edite o arquivo campanhas.js."));
       menu.textContent = "";
       return;
     }
@@ -126,4 +140,14 @@
   });
 
   mostrar();
+
+  var D = window.HubPGDados;
+  var pedido = D ? D.carregar()
+                 : Promise.resolve({ lista: (typeof CAMPANHAS !== "undefined" && CAMPANHAS) || [], origem: "arquivo" });
+  pedido.then(function (r) {
+    lista = r.lista;
+    origem = r;
+    carregado = true;
+    mostrar();
+  });
 })();

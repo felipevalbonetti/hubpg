@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Cinzel:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261018">
 </head>
 <body>
   <div class="moldura">
@@ -21,120 +21,224 @@
     </header>
 
     <div id="aviso" class="aviso" role="status" hidden></div>
+    <div id="erro-js" class="aviso" role="alert" hidden></div>
+    <noscript><p class="aviso">Ative o JavaScript do navegador para usar o painel.</p></noscript>
 
-    <!-- Entrada -->
-    <section id="entrada" class="painel">
+    <!-- Aparece até o painel terminar de carregar. Se o script falhar, esta mensagem fica à vista. -->
+    <p id="carregando" class="ajuda">Carregando o painel…</p>
 
-      <!-- Já existe uma conta neste navegador: entra só com a senha -->
-      <div id="p-entrar" hidden>
-        <h2 class="faixa">Entrar</h2>
-        <p class="ajuda">Conta deste navegador: <strong id="resumo-conta"></strong></p>
-        <div class="campo">
-          <label for="senha-entrar">Senha</label>
-          <input id="senha-entrar" type="password" autocomplete="current-password">
+    <!-- ===================== MODO NUVEM (Firebase): e-mail, senha e Google ===================== -->
+    <div id="modo-nuvem" hidden>
+      <p id="n-aguarde" class="ajuda" hidden>Conectando…</p>
+
+      <!-- Entrar / criar conta -->
+      <section id="n-entrada" class="painel" hidden>
+        <h2 class="faixa">Entrar no admin</h2>
+        <div class="abas">
+          <button id="aba-entrar" class="btn" type="button">Entrar</button>
+          <button id="aba-criar" class="btn btn-claro" type="button">Criar conta</button>
         </div>
-        <button id="entrar-senha" class="btn" type="button">Entrar</button>
-        <button id="apagar-conta" class="btn btn-claro" type="button">Esqueci a senha / trocar de token</button>
-      </div>
-
-      <!-- Primeira vez: cria a conta guardando o token com uma senha -->
-      <div id="p-criar" hidden>
-        <h2 class="faixa">Criar conta de administrador</h2>
+        <button id="btn-google" class="btn btn-google" type="button">Entrar com o Google</button>
+        <p class="ajuda">ou com e-mail e senha:</p>
+        <div class="grade-campos">
+          <div class="campo">
+            <label for="n-email">E-mail</label>
+            <input id="n-email" type="email" autocomplete="email">
+          </div>
+          <div class="campo">
+            <label for="n-senha">Senha (mínimo de 6 caracteres)</label>
+            <input id="n-senha" type="password" autocomplete="current-password">
+          </div>
+          <div class="campo" id="campo-senha2" hidden>
+            <label for="n-senha2">Repita a senha</label>
+            <input id="n-senha2" type="password" autocomplete="new-password">
+          </div>
+        </div>
+        <button id="btn-email" class="btn" type="button">Entrar</button>
+        <button id="btn-esqueci" class="btn btn-claro" type="button">Esqueci a senha</button>
         <p class="ajuda">
-          O que dá permissão de alterar o site é um token do GitHub (só do repositório do HubPG).
-          Ao criar a conta, o token fica guardado <strong>criptografado neste navegador</strong>, protegido
-          pela senha que você escolher, e nas próximas vezes você entra só com a senha. A senha pode ser curta,
-          mas senha curta é fácil de adivinhar por quem usar este aparelho. A conta vale só neste aparelho:
-          em outro, crie de novo com o token. Quem não tem a senha nem o token abre esta página,
-          mas não consegue alterar nada.
+          Qualquer pessoa pode criar uma conta, mas só os e-mails liberados nas regras do Firebase conseguem alterar o site.
+          Contas com e-mail e senha precisam confirmar o e-mail pelo link que o Firebase envia.
         </p>
-        <div class="grade-campos">
-          <div class="campo">
-            <label for="dono">Usuário do GitHub</label>
-            <input id="dono" autocomplete="off">
-          </div>
-          <div class="campo">
-            <label for="repo">Repositório</label>
-            <input id="repo" autocomplete="off" value="hubpg">
-          </div>
-          <div class="campo">
-            <label for="ramo">Branch</label>
-            <input id="ramo" autocomplete="off" value="main">
-          </div>
-        </div>
-        <div class="campo">
-          <label for="token">Token do GitHub</label>
-          <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
-        </div>
-        <div class="grade-campos">
-          <div class="campo">
-            <label for="senha-nova">Escolha uma senha</label>
-            <input id="senha-nova" type="password" autocomplete="new-password">
-          </div>
-          <div class="campo">
-            <label for="senha-nova2">Repita a senha</label>
-            <input id="senha-nova2" type="password" autocomplete="new-password">
-          </div>
-        </div>
-        <button id="criar-conta" class="btn" type="button">Criar conta e entrar</button>
-        <button id="entrar" class="btn btn-claro" type="button">Entrar só com o token</button>
-        <p class="ajuda">Entrar com uma conta do Google não é possível neste tipo de site, porque isso exige um servidor.</p>
-      </div>
-    </section>
+      </section>
 
-    <!-- Gerenciar -->
-    <section id="gerenciar" class="painel" hidden>
-      <h2 class="faixa">Campanhas</h2>
-      <p></p>
-      <ul id="lista" class="lista-admin"></ul>
+      <!-- E-mail ainda não confirmado -->
+      <section id="n-verificar" class="painel" hidden>
+        <h2 class="faixa">Confirme o seu e-mail</h2>
+        <p class="ajuda">
+          Enviamos um link de confirmação para <strong id="v-email"></strong>. Abra o e-mail (olhe também o spam),
+          clique no link e depois volte aqui.
+        </p>
+        <button id="v-ja" class="btn" type="button">Já confirmei</button>
+        <button id="v-reenviar" class="btn btn-claro" type="button">Reenviar e-mail</button>
+        <button id="v-sair" class="btn btn-claro" type="button">Sair</button>
+      </section>
 
-      <h2 class="faixa">Nova campanha</h2>
-      <form id="form" autocomplete="off">
-        <div class="grade-campos">
-          <div class="campo">
-            <label for="f-titulo">Título *</label>
-            <input id="f-titulo" required>
-          </div>
-          <div class="campo">
-            <label for="f-sistema">Sistema de RPG</label>
-            <input id="f-sistema" list="lista-sistemas" placeholder="Ordem Paranormal, D&amp;D 5e...">
-            <datalist id="lista-sistemas"></datalist>
-          </div>
-          <div class="campo">
-            <label for="f-mestre">Mestre</label>
-            <input id="f-mestre">
-          </div>
-          <div class="campo">
-            <label for="f-status">Status</label>
-            <select id="f-status">
-              <option>Em andamento</option>
-              <option>Pausada</option>
-              <option>Encerrada</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="f-tema">Tema visual</label>
-            <select id="f-tema"></select>
-          </div>
-        </div>
-        <div class="campo">
-          <label for="f-resumo">Resumo da campanha</label>
-          <textarea id="f-resumo"></textarea>
-        </div>
-        <button class="btn btn-claro" type="submit">Adicionar à lista</button>
-      </form>
+      <!-- Conta válida, mas sem permissão de administrador -->
+      <section id="n-negado" class="painel" hidden>
+        <h2 class="faixa">Sem permissão</h2>
+        <p class="ajuda">
+          A conta <strong id="neg-email"></strong> entrou, mas não está liberada como administradora.
+          Para liberar, coloque esse e-mail na lista do arquivo <code>firestore.rules</code> e publique as regras
+          no Firebase (Firestore Database &rarr; Regras). Se acabou de fazer isso, clique em "Tentar de novo".
+        </p>
+        <button id="neg-tentar" class="btn" type="button">Tentar de novo</button>
+        <button id="neg-sair" class="btn btn-claro" type="button">Sair</button>
+      </section>
 
-      <p></p>
-      <button id="salvar" class="btn" type="button" disabled>Salvar no GitHub</button>
-      <button id="sair" class="btn btn-claro" type="button">Sair</button>
-      <p class="ajuda">
-        As mudanças só valem para os visitantes depois de salvar. Depois de salvar,
-        o GitHub leva cerca de um minuto para atualizar o site.
-      </p>
-    </section>
+      <!-- Painel -->
+      <section id="n-painel" class="painel" hidden>
+        <p class="ajuda">Conectado como <strong id="n-quem"></strong>.</p>
+        <h2 class="faixa">Campanhas</h2>
+        <p></p>
+        <ul id="n-lista" class="lista-admin"></ul>
+        <div id="n-editor" class="editor" hidden></div>
+        <button id="n-nova" class="btn btn-claro" type="button">+ Nova campanha</button>
+        <button id="n-importar" class="btn btn-claro" type="button" hidden>Importar as campanhas do campanhas.js</button>
+        <datalist id="n-lista-sistemas"></datalist>
+
+        <p></p>
+        <button id="n-salvar" class="btn" type="button" disabled>Salvar na nuvem</button>
+        <button id="n-sair" class="btn btn-claro" type="button">Sair</button>
+        <p class="ajuda">As mudanças só aparecem no site depois de salvar. Depois de salvar, o site já mostra as campanhas novas.</p>
+      </section>
+    </div>
+
+    <!-- ===================== MODO ARQUIVO (token do GitHub) ===================== -->
+    <div id="modo-arquivo" hidden>
+
+      <!-- Entrada -->
+      <section id="entrada" class="painel">
+
+        <!-- Já existe uma conta neste navegador: entra só com a senha -->
+        <div id="p-entrar" hidden>
+          <h2 class="faixa">Entrar</h2>
+          <p class="ajuda">Conta deste navegador: <strong id="resumo-conta"></strong></p>
+          <div class="campo">
+            <label for="senha-entrar">Senha</label>
+            <input id="senha-entrar" type="password" autocomplete="current-password">
+          </div>
+          <button id="entrar-senha" class="btn" type="button">Entrar</button>
+          <button id="apagar-conta" class="btn btn-claro" type="button">Esqueci a senha / trocar de token</button>
+        </div>
+
+        <!-- Primeira vez: cria a conta guardando o token com uma senha -->
+        <div id="p-criar">
+          <h2 class="faixa">Criar conta de administrador</h2>
+          <p class="ajuda">
+            O que dá permissão de alterar o site é um token do GitHub (só do repositório do HubPG).
+            Ao criar a conta, o token fica guardado <strong>criptografado neste navegador</strong>, protegido
+            pela senha que você escolher, e nas próximas vezes você entra só com a senha. A senha pode ser curta,
+            mas senha curta é fácil de adivinhar por quem usar este aparelho. A conta vale só neste aparelho:
+            em outro, crie de novo com o token. Quem não tem a senha nem o token abre esta página,
+            mas não consegue alterar nada.
+          </p>
+          <div class="grade-campos">
+            <div class="campo">
+              <label for="dono">Usuário do GitHub</label>
+              <input id="dono" autocomplete="off">
+            </div>
+            <div class="campo">
+              <label for="repo">Repositório</label>
+              <input id="repo" autocomplete="off" value="hubpg">
+            </div>
+            <div class="campo">
+              <label for="ramo">Branch</label>
+              <input id="ramo" autocomplete="off" value="main">
+            </div>
+          </div>
+          <div class="campo">
+            <label for="token">Token do GitHub</label>
+            <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+          </div>
+          <div class="grade-campos">
+            <div class="campo">
+              <label for="senha-nova">Escolha uma senha</label>
+              <input id="senha-nova" type="password" autocomplete="new-password">
+            </div>
+            <div class="campo">
+              <label for="senha-nova2">Repita a senha</label>
+              <input id="senha-nova2" type="password" autocomplete="new-password">
+            </div>
+          </div>
+          <button id="criar-conta" class="btn" type="button">Criar conta e entrar</button>
+          <button id="entrar" class="btn btn-claro" type="button">Entrar só com o token</button>
+          <p class="ajuda">
+            Quer entrar com e-mail, senha ou Google? Isso exige configurar o Firebase (passo a passo no README do projeto).
+          </p>
+        </div>
+      </section>
+
+      <!-- Gerenciar -->
+      <section id="gerenciar" class="painel" hidden>
+        <h2 class="faixa">Campanhas</h2>
+        <p></p>
+        <ul id="lista" class="lista-admin"></ul>
+
+        <h2 class="faixa">Nova campanha</h2>
+        <form id="form" autocomplete="off">
+          <div class="grade-campos">
+            <div class="campo">
+              <label for="f-titulo">Título *</label>
+              <input id="f-titulo" required>
+            </div>
+            <div class="campo">
+              <label for="f-sistema">Sistema de RPG</label>
+              <input id="f-sistema" list="lista-sistemas" placeholder="Ordem Paranormal, D&amp;D 5e...">
+              <datalist id="lista-sistemas"></datalist>
+            </div>
+            <div class="campo">
+              <label for="f-mestre">Mestre</label>
+              <input id="f-mestre">
+            </div>
+            <div class="campo">
+              <label for="f-status">Status</label>
+              <select id="f-status">
+                <option>Em andamento</option>
+                <option>Pausada</option>
+                <option>Encerrada</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="f-tema">Tema visual</label>
+              <select id="f-tema"></select>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="f-resumo">Resumo da campanha</label>
+            <textarea id="f-resumo"></textarea>
+          </div>
+          <button class="btn btn-claro" type="submit">Adicionar à lista</button>
+        </form>
+
+        <p></p>
+        <button id="salvar" class="btn" type="button" disabled>Salvar no GitHub</button>
+        <button id="sair" class="btn btn-claro" type="button">Sair</button>
+        <p class="ajuda">
+          As mudanças só valem para os visitantes depois de salvar. Depois de salvar,
+          o GitHub leva cerca de um minuto para atualizar o site.
+        </p>
+      </section>
+    </div>
   </div>
 
-  <script src="sistemas.js"></script>
-  <script src="admin.js"></script>
+  <!-- Se qualquer script falhar, mostra o motivo em vez de deixar a página vazia -->
+  <script>
+    window.addEventListener("error", function (e) {
+      var a = document.getElementById("erro-js");
+      if (!a) return;
+      var t = e.target && (e.target.src || e.target.href);
+      a.textContent = t
+        ? "Não consegui carregar " + t + ". Recarregue a página com Ctrl+Shift+R."
+        : "Erro no painel: " + (e.message || "desconhecido") + ". Recarregue a página com Ctrl+Shift+R.";
+      a.hidden = false;
+    }, true);
+  </script>
+  <script src="campanhas.js?v=20261018"></script>
+  <script src="firebase-config.js?v=20261018"></script>
+  <script src="sistemas.js?v=20261018"></script>
+  <script src="dados.js?v=20261018"></script>
+  <script src="admin.js?v=20261018"></script>
+  <script src="admin-nuvem.js?v=20261018"></script>
 </body>
 </html>
