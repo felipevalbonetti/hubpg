@@ -11,42 +11,27 @@ Site das campanhas de RPG, no estilo de Ordem Paranormal. Cada campanha é uma s
 
 O site pede aos buscadores para não listá-lo (`noindex`), então só abre para quem tiver o link.
 
-## Painel admin (adicionar e remover campanhas)
+## Admin com conta e Google (Firebase)
 
-Abra `admin.html` (há um link "admin" no rodapé do site). Como o GitHub Pages não tem servidor, a "senha" do painel é um token do GitHub: quem não tem o token abre a página, mas não consegue alterar nada.
+O admin (`admin.html`, link "admin" no rodapé) tem **criar conta com nome de usuário e senha** e **entrar com o Google**.
+Quem entra pode adicionar, editar e remover campanhas (título, sistema, mestre, status, tema, resumo, personagens e diário de sessões).
+As campanhas ficam no Firebase (Firestore), então o site atualiza na hora ao salvar, sem token do GitHub.
 
-Para criar o token (uma vez só):
-
-1. No GitHub, vá em Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token.
-2. Em **Repository access**, escolha *Only select repositories* e marque o `hubpg`.
-3. Em **Permissions → Repository permissions**, coloque **Contents: Read and write**.
-4. Escolha uma validade (por exemplo 90 dias), gere e copie o token. Ele só aparece uma vez.
-
-Na **primeira vez**, o painel mostra "Criar conta de administrador": informe o usuário do GitHub, o repositório, o token e escolha uma senha (mínimo de 4 caracteres, `1234` funciona). O token é guardado **criptografado neste navegador**, trancado pela senha, e nas próximas vezes você entra só com a senha. A conta vale só no aparelho onde foi criada; em outro, crie de novo com o token. Se esquecer a senha, use "Esqueci a senha / trocar de token" e crie a conta outra vez. Senha curta é fácil de adivinhar por quem usar o seu aparelho, e quem tem acesso ao token continua podendo alterar o site direto no GitHub. Também dá para entrar "só com o token", sem criar conta. Entrar com Google não é possível, porque isso exige um servidor e o GitHub Pages não tem.
-
-Dentro do painel, você pode adicionar campanhas (com sistema, mestre, status, tema e resumo), remover as que não quiser e clicar em **Salvar no GitHub**. O site atualiza em cerca de um minuto. O token fica só na aba do navegador e é enviado apenas ao GitHub. Não compartilhe o token e não coloque ele em nenhum arquivo do repositório.
-
-## Admin com e-mail, senha e Google (Firebase)
-
-Sem Firebase, o admin usa um token do GitHub. Com o Firebase configurado, o admin passa a ter
-**criar conta com e-mail e senha** e **entrar com o Google**, e as campanhas ficam guardadas na nuvem
-(Firestore) em vez de no `campanhas.js`.
+Configuração (uma vez só, depende da sua conta Google):
 
 1. Em https://console.firebase.google.com crie um projeto (o Analytics pode ficar desligado).
-2. **Authentication > Sign-in method**: ative **E-mail/senha** e **Google**.
+2. **Authentication > Sign-in method**: ative **E-mail/senha** (é ela que guarda o nome de usuário) e **Google**.
 3. **Authentication > Settings > Authorized domains**: adicione `felipevalbonetti.github.io`.
 4. **Firestore Database > Criar banco** (modo produção, região `southamerica-east1`).
-5. Abra o `firestore.rules`, troque `SEU_EMAIL_AQUI@gmail.com` pelo e-mail do admin (pode ter vários, separados por vírgula),
-   cole tudo em **Firestore > Regras** e publique.
-6. **Configurações do projeto > Seus apps > Web (`</>`)**: registre um app e copie o `firebaseConfig`
-   para o `firebase-config.js` (esses valores não são segredo). Faça commit.
-7. Abra `admin.html`, crie a conta (ou entre com o Google) e use **Importar as campanhas do campanhas.js** na primeira vez.
+5. Cole o conteúdo de `firestore.rules` em **Firestore > Regras** e publique. Não precisa trocar nada.
+6. **Configurações do projeto > Seus apps > Web (`</>`)**: registre um app e copie o `firebaseConfig` para o `firebase-config.js`. Faça commit.
+7. Abra `admin.html`, crie a conta e use **Importar as campanhas do campanhas.js** na primeira vez.
 
 Detalhes:
-- A senha precisa de **no mínimo 6 caracteres** (o Firebase não aceita `1234`; `123456` funciona).
-- Contas de e-mail e senha precisam confirmar o e-mail pelo link enviado.
-- Qualquer um consegue criar conta, mas **só os e-mails listados no `firestore.rules` conseguem alterar** o site. Depois de criar a sua, dá para desativar novos cadastros no console do Firebase.
-- Se a nuvem falhar, o site público mostra o `campanhas.js` com um aviso.
+- Nome de usuário: 3 a 30 caracteres (letras sem acento, números, `.`, `-`, `_`). Senha: no mínimo 6 caracteres (o Firebase não aceita `1234`; `123456` funciona).
+- Não há recuperação de senha nem confirmação de e-mail para contas de usuário. Se esquecer a senha, crie outra conta (ou apague a antiga no console do Firebase).
+- **Qualquer pessoa que criar uma conta consegue editar o site.** Depois de criar a sua, dá para desativar novos cadastros no console do Firebase (Authentication > Settings > User actions).
+- Sem o `firebase-config.js` preenchido, o admin só mostra um aviso, e o site lê o `campanhas.js`. Se a nuvem falhar, o site público mostra o `campanhas.js` com um aviso.
 
 ## Criar personagem
 

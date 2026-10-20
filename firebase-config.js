@@ -1,8 +1,9 @@
 // =====================================================================
 //  CONFIGURAÇÃO DO FIREBASE
 //
-//  Enquanto isto estiver como null, o site funciona como antes: lê as
-//  campanhas do arquivo campanhas.js e o painel admin usa o token do GitHub.
+//  Enquanto isto estiver como null, o site mostra as campanhas do arquivo
+//  campanhas.js e o admin avisa que falta ligar o Firebase (as contas e as
+//  campanhas editadas ficam nele).
 //
 //  Depois de criar o projeto no Firebase (passo a passo no README), troque
 //  o null pelo objeto que o Firebase mostra em "Configurações do projeto >

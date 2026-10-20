@@ -1,14 +1,20 @@
 // =====================================================================
 //  PAINEL ADMIN COM LOGIN (Firebase)
-//  Entrar com e-mail e senha ou com Google; as campanhas ficam no
-//  Firestore. Só roda quando o firebase-config.js está preenchido.
+//  Criar conta / entrar com nome de usuário e senha (ou com o Google);
+//  qualquer conta logada pode editar. As campanhas ficam no Firestore.
 // =====================================================================
 (function () {
   "use strict";
 
   var D = window.HubPGDados;
   var A = window.HubPGAdmin;
-  if (!D || !D.configurado() || !A) return;
+  if (!D || !A) return;
+  if (!D.configurado()) {
+    // Sem Firebase não existe onde guardar contas nem campanhas: explica em vez de ficar em branco
+    $("carregando").hidden = true;
+    $("sem-config").hidden = false;
+    return;
+  }
 
   function $(id) { return document.getElementById(id); }
 
@@ -35,12 +41,12 @@
 
   function msgErro(e) {
     var c = (e && e.code) || "";
-    var igual = "E-mail ou senha incorretos.";
+    var igual = "Usuário ou senha incorretos.";
     var m = {
-      "auth/invalid-email": "Esse e-mail não parece válido.",
+      "auth/invalid-email": "Nome de usuário inválido.",
       "auth/missing-password": "Digite a senha.",
-      "auth/weak-password": "Senha fraca: o Firebase exige pelo menos 6 caracteres.",
-      "auth/email-already-in-use": "Já existe uma conta com esse e-mail. Use \"Entrar\" (ou \"Esqueci a senha\").",
+      "auth/weak-password": "Senha fraca: use pelo menos 6 caracteres.",
+      "auth/email-already-in-use": "Esse nome de usuário já existe. Escolha outro ou clique em \"Entrar\".",
       "auth/invalid-credential": igual,
       "auth/wrong-password": igual,
       "auth/user-not-found": igual,
@@ -52,15 +58,30 @@
         "Adicione em Authentication → Settings → Authorized domains.",
       "auth/operation-not-allowed": "Esse tipo de login não está ativado no Firebase (Authentication → Sign-in method).",
       "auth/user-disabled": "Essa conta foi desativada.",
-      "permission-denied": "Sem permissão: a sua conta não está liberada como administradora nas regras do Firebase."
+      "permission-denied": "O banco recusou a gravação. Confira se as regras do Firestore do arquivo firestore.rules foram publicadas."
     };
     return m[c] || ("Algo deu errado" + (c ? " (" + c + ")" : "") + ".");
   }
 
   function telas(nome) {
-    ["n-aguarde", "n-entrada", "n-verificar", "n-negado", "n-painel"].forEach(function (id) {
+    ["n-aguarde", "n-entrada", "n-painel"].forEach(function (id) {
       $(id).hidden = (id !== nome);
     });
+  }
+
+  // O Firebase só entende e-mail: o nome de usuário vira um e-mail interno (nunca é enviado nada para ele)
+  var DOMINIO = "@hubpg.user";
+
+  function usuarioParaEmail(u) {
+    u = String(u || "").trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9._-]{2,29}$/.test(u) || /[._-]$/.test(u)) return null;
+    return u + DOMINIO;
+  }
+
+  function nomeDaConta(user) {
+    var e = (user && user.email) || "";
+    if (e.slice(-DOMINIO.length) === DOMINIO) return e.slice(0, -DOMINIO.length);
+    return (user && (user.displayName || user.email)) || "";
   }
 
   // ---------- entrar ----------
@@ -75,19 +96,21 @@
     aviso("");
   }
 
-  function porEmail() {
+  function porUsuario() {
     aviso("");
-    var email = $("n-email").value.trim();
+    var usuario = $("n-usuario").value;
     var senha = $("n-senha").value;
-    if (!email || !senha) { aviso("Preencha o e-mail e a senha."); return; }
+    if (!usuario.trim() || !senha) { aviso("Preencha o nome de usuário e a senha."); return; }
+    var email = usuarioParaEmail(usuario);
+    if (!email) {
+      aviso("Nome de usuário: de 3 a 30 caracteres, só letras sem acento, números, ponto, hífen e sublinhado, começando por letra ou número.");
+      return;
+    }
     var p;
     if (S.criando) {
       if (senha.length < 6) { aviso(msgErro({ code: "auth/weak-password" })); return; }
       if (senha !== $("n-senha2").value) { aviso("As duas senhas não são iguais."); return; }
-      p = S.auth.createUserWithEmailAndPassword(email, senha).then(function (cred) {
-        // se o envio falhar, dá para reenviar na tela de confirmação
-        return cred.user.sendEmailVerification().then(null, function () {});
-      });
+      p = S.auth.createUserWithEmailAndPassword(email, senha);
     } else {
       p = S.auth.signInWithEmailAndPassword(email, senha);
     }
@@ -109,24 +132,6 @@
     }).catch(function (e) { aviso(msgErro(e)); });
   }
 
-  function esqueci() {
-    var email = $("n-email").value.trim();
-    if (!email) { aviso("Digite o seu e-mail no campo acima e clique de novo em \"Esqueci a senha\"."); return; }
-    function pronto() {
-      aviso("Se existir uma conta com esse e-mail, enviamos um link para criar uma nova senha. Olhe também o spam.", true);
-    }
-    S.auth.sendPasswordResetEmail(email).then(pronto, function (e) {
-      if (e && e.code === "auth/user-not-found") pronto(); else aviso(msgErro(e));
-    });
-  }
-
-  function reenviar() {
-    if (!S.user) return;
-    S.user.sendEmailVerification().then(function () {
-      aviso("E-mail de confirmação reenviado.", true);
-    }, function (e) { aviso(msgErro(e)); });
-  }
-
   function sair() {
     if (S.sujo && !confirm("Há mudanças não salvas. Sair mesmo assim?")) return;
     marcarSujo(false);
@@ -135,7 +140,6 @@
 
   // ---------- quem está logado ----------
 
-  // Atualiza os dados da conta (o e-mail pode ter sido confirmado agora) e decide a tela
   function avaliarUsuario(user) {
     var id = ++avaliacao;
     S.user = user;
@@ -149,34 +153,10 @@
       return;
     }
     telas("n-aguarde");
-    user.reload().then(function () {
-      return user.getIdToken(true);   // renova o token para valer o e-mail já confirmado
-    }).then(function () {
-      if (id !== avaliacao) return null;
-      if (!user.emailVerified) {
-        $("v-email").textContent = user.email || "";
-        telas("n-verificar");
-        return null;
-      }
-      return verificarAdmin();
-    }).catch(function (e) {
+    carregarLista().catch(function (e) {
       if (id !== avaliacao) return;
       aviso(msgErro(e));
       telas("n-entrada");
-    });
-  }
-
-  // Só administradores conseguem ler o documento admin/ok (regra do Firestore)
-  function verificarAdmin() {
-    return S.db.collection("admin").doc("ok").get().then(function () {
-      return carregarLista();
-    }, function (e) {
-      if (e && e.code === "permission-denied") {
-        $("neg-email").textContent = S.user.email || "";
-        telas("n-negado");
-        return null;
-      }
-      throw e;
     });
   }
 
@@ -185,7 +165,7 @@
       S.lista = lista;
       S.remotos = lista.map(function (c) { return c.id; });
       marcarSujo(false);
-      $("n-quem").textContent = S.user.email || "";
+      $("n-quem").textContent = nomeDaConta(S.user);
       telas("n-painel");
       desenharLista();
     });
@@ -435,7 +415,6 @@
 
   function iniciar() {
     $("carregando").hidden = true;
-    $("modo-arquivo").hidden = true;
     $("modo-nuvem").hidden = false;
     telas("n-aguarde");
 
@@ -449,16 +428,10 @@
 
     $("aba-entrar").addEventListener("click", function () { aba(false); });
     $("aba-criar").addEventListener("click", function () { aba(true); });
-    $("btn-email").addEventListener("click", porEmail);
+    $("btn-email").addEventListener("click", porUsuario);
     $("btn-google").addEventListener("click", porGoogle);
-    $("btn-esqueci").addEventListener("click", esqueci);
-    $("n-senha").addEventListener("keydown", function (e) { if (e.key === "Enter" && !S.criando) porEmail(); });
-    $("n-senha2").addEventListener("keydown", function (e) { if (e.key === "Enter") porEmail(); });
-    $("v-ja").addEventListener("click", function () { avaliarUsuario(S.auth.currentUser); });
-    $("v-reenviar").addEventListener("click", reenviar);
-    $("v-sair").addEventListener("click", sair);
-    $("neg-tentar").addEventListener("click", function () { avaliarUsuario(S.auth.currentUser); });
-    $("neg-sair").addEventListener("click", sair);
+    $("n-senha").addEventListener("keydown", function (e) { if (e.key === "Enter" && !S.criando) porUsuario(); });
+    $("n-senha2").addEventListener("keydown", function (e) { if (e.key === "Enter") porUsuario(); });
     $("n-sair").addEventListener("click", sair);
     $("n-nova").addEventListener("click", novaCampanha);
     $("n-importar").addEventListener("click", importarArquivo);
